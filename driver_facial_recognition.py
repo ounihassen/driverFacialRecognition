@@ -16,7 +16,7 @@ from IPython.display import display
 
 # Chargement du vidéo
 video_capture = cv2.VideoCapture('videos/vehicule3.avi')
-video_capture.set(5, 2)
+#video_capture.set(5, 2)
 
 
 
@@ -33,25 +33,38 @@ for (dirpath, dirnames, filenames) in os.walk('img/known/'):
     known_faces_filenames.extend(filenames)
     break
 
-# Learning from photos
-for filename in known_faces_filenames:
-    # si la photo ne contient pas un visage humain on va avoir une erreur
-    face = face_recognition.load_image_file('img/known/' + filename)
-    # on rempli le tableau des noms depuis les noms des photos sans l'extension
-    known_face_names.append(re.sub("[0-9]",'', filename[:-4]))
-    """
-    L'encodage est simplement une représentation de faible dimension d'une face 
-    qui peut être facilement comparée à d'autres faces que la bibliothèque 
-    reconnaîtra à l'avenir.
-    """
-    known_face_encodings.append(face_recognition.face_encodings(face)[0])
+# test s'il y a des photos dans img/known
+if len(known_faces_filenames) == 0:
+    program_fail = False
+    print("Aucune photos dans img/known")
+else :
+    # Learning from photos  
+    for filename in known_faces_filenames:
+        # si la photo ne contient pas un visage humain on va avoir une erreur
+        face = face_recognition.load_image_file('img/known/' + filename)
+    #if not face:
+        program_fail = False
+        print("Aucun visage dans les photos")
+    #else :
+        program_fail = True
+        # on rempli le tableau des noms depuis les noms des photos sans l'extension
+        known_face_names.append(re.sub("[0-9]",'', filename[:-4]))
+        """
+        L'encodage est simplement une représentation de faible dimension d'une face 
+        qui peut être facilement comparée à d'autres faces que la bibliothèque 
+        reconnaîtra à l'avenir.
+        """
+        
+        print(len(face_recognition.face_encodings(face)))
+        test_face = face_recognition.face_encodings(face)[0]
+        known_face_encodings.append(test_face)
+        
+        print('Learned encoding for', len(known_face_encodings), 'images.')
 
-print('Learned encoding for', len(known_face_encodings), 'images.')
 
 face_locations = []
 face_encodings = []
 face_names = []
-process_this_frame = True
 
 # fonction qui permet de dessiner un cadre autour du visage
 def drawRectangleOnFace(face_locations, face_names, similarity_text, autorized=True ):
@@ -60,7 +73,7 @@ def drawRectangleOnFace(face_locations, face_names, similarity_text, autorized=T
         name = face_names
     else:
         color = [0,0,255]
-        name = "Unknown ("+similarity_text+")"
+        name = "Unknown"
     for (top, right, bottom, left), name in zip(face_locations, name):
             cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
             font = cv2.FONT_HERSHEY_DUPLEX
@@ -69,6 +82,8 @@ def drawRectangleOnFace(face_locations, face_names, similarity_text, autorized=T
             
     
 while True:
+    if not program_fail:
+        break
     ret, frame = video_capture.read()
     
     # checher tout les visages dans 'frame'
@@ -100,8 +115,9 @@ while True:
             
         drawRectangleOnFace(face_locations, face_names, similarity_text, autorized)
         cv2.imshow('Video', frame)
-        if cv2.waitKey(20) & 0xFF == ord('q'):
-            break        
-                    
+    if cv2.waitKey(20) & 0xFF == ord('q'):
+        break        
+
 video_capture.release()
-cv2.destroyAllWindows()
+cv2.destroyAllWindows()        
+    
