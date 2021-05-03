@@ -1,7 +1,5 @@
 import os,face_recognition,easygui,cv2,re
 import numpy as np
-from PIL import Image, ImageDraw
-from IPython.display import display
 
 # Chargement du vidéo
 video_capture = cv2.VideoCapture('videos/vehicule.avi')
