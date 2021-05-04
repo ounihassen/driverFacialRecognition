@@ -61,11 +61,27 @@ def drawRectangleOnFace(face_locations, face_names, similarity_text, autorized=T
         color = [0,0,255]
         name = "Unknown ("+similarity_text+")"
     for (top, right, bottom, left), name in zip(face_locations, name):
-            cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
-            font = cv2.FONT_HERSHEY_DUPLEX
-            #text_width, text_height = draw.textsize(name)
-            cv2.putText(frame, name+"("+similarity_text+")", (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1) 
-            
+        # Crop from x, y, w, h 
+        crop_img = frame[top: top+bottom+30, left: left+bottom] 
+        date_now = datetime.today().strftime('%Y%m%d%H%M%S')
+        img_path = 'img/unknown/unknown_'+date_now+'.jpg'
+        cv2.imwrite(img_path, crop_img)
+        # call dialog box
+        autoriseUnknownDriver(img_path)
+        # draw rectangle
+        cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
+        font = cv2.FONT_HERSHEY_DUPLEX
+        cv2.putText(frame, name+"("+similarity_text+")", (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1) 
+        
+# fonction accept the new driver to drive the car and save image
+def autoriseUnknownDriver(img_path):
+    #cv2.imread(img_path)
+    answear_yes = easygui.enterbox('Do you want to authorize this person to drive your car?', 'Alert', "Enter user name..")
+    if answear_yes:
+        shutil.move(img_path, 'img/known/'+answear_yes+'.jpg')         
+    else:
+        easygui.msgbox('The driver is not allowed to drive this car', 'Warning')
+       
     
 while True:
     if is_processing_fail:
@@ -88,7 +104,6 @@ while True:
         best_match_index = np.argmin(face_distances)
         similarity = (1 - face_distances[0])*100
         similarity_text = str(np.round(similarity))+"%"
-        print("Similarity=>"+similarity_text)
 
         if matches[best_match_index]:
             name = known_face_names[best_match_index]
@@ -96,25 +111,14 @@ while True:
             autorized = True
         else:
             name = "Unknown"
-            date_now = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
-            img_path = 'img/unknown/unknown_'+date_now+'.jpg'
-            cv2.imwrite(img_path, frame) 
-            face_names.append(name)                  
-            autorized = False                        
+            face_names.append(name)
+            autorized = False   
+            cv2.waitKey(-1) #wait until any key is pressed
                    
         drawRectangleOnFace(face_locations, face_names, similarity_text, autorized)
         cv2.imshow('Video', frame)
         
-    # accept the new driver to drive the car and save image
-    if not autorized:        
-        answear_yes = easygui.enterbox('Do you want to authorize this person to drive your car?', 'Alert', "Enter user name..")
-        if answear_yes:
-            shutil.move(img_path, 'img/known/'+answear_yes+'.jpg')         
-            break
-        else:
-            easygui.msgbox('The driver is not allowed to drive this car', 'Warning')
-            break
-                
+          
     if cv2.waitKey(20) & 0xFF == ord('q'):
         break        
                     
