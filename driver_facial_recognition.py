@@ -1,5 +1,8 @@
-import os,face_recognition,easygui,cv2,re
+import os,face_recognition,cv2,re
+import easygui
 import numpy as np
+from datetime import datetime
+import shutil
 
 # Chargement du vidéo
 video_capture = cv2.VideoCapture('videos/vehicule.avi')
@@ -93,20 +96,23 @@ while True:
             autorized = True
         else:
             name = "Unknown"
-            face_names.append(name)      
+            date_now = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
+            img_path = 'img/unknown/unknown_'+date_now+'.jpg'
+            cv2.imwrite(img_path, frame) 
+            face_names.append(name)                  
             autorized = False                        
-            
+                   
         drawRectangleOnFace(face_locations, face_names, similarity_text, autorized)
         cv2.imshow('Video', frame)
         
     # accept the new driver to drive the car and save image
     if not autorized:        
-        answear_yes = easygui.ynbox('Do you want to autorize this person to drive your car?', 'Title', ('Yes', 'No'))
+        answear_yes = easygui.enterbox('Do you want to authorize this person to drive your car?', 'Alert', "Enter user name..")
         if answear_yes:
-            print(face_locations)
+            shutil.move(img_path, 'img/known/'+answear_yes+'.jpg')         
             break
         else:
-            print('you are not allowed to drive this car')
+            easygui.msgbox('The driver is not allowed to drive this car', 'Warning')
             break
                 
     if cv2.waitKey(20) & 0xFF == ord('q'):
