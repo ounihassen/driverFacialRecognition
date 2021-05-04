@@ -1,4 +1,5 @@
-import os,face_recognition,easygui,cv2,re
+import os,face_recognition,cv2,re
+import easygui
 import numpy as np
 from datetime import datetime
 import shutil
@@ -95,7 +96,8 @@ while True:
             autorized = True
         else:
             name = "Unknown"
-            img_path = 'img/users/unknown'+".jpg"
+            date_now = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
+            img_path = 'img/unknown/unknown_'+date_now+'.jpg'
             cv2.imwrite(img_path, frame) 
             face_names.append(name)                  
             autorized = False                        
@@ -105,14 +107,12 @@ while True:
         
     # accept the new driver to drive the car and save image
     if not autorized:        
-        answear_yes = easygui.enterbox('Do you want to autorize this person to drive your car?', 'Alert', "Entrer Nom de nouveau utilisateur")
+        answear_yes = easygui.enterbox('Do you want to authorize this person to drive your car?', 'Alert', "Enter user name..")
         if answear_yes:
-            shutil.move(img_path, 'img/known/'+answear_yes+'.jpg')
-            #Path("path/to/current/file.foo").rename("path/to/new/destination/for/file.foo")
-            #cv2.imwrite(face_names[0]+".jpg", all_frames[best_match_index])            
+            shutil.move(img_path, 'img/known/'+answear_yes+'.jpg')         
             break
         else:
-            easygui.msgbox('you are not allowed to drive this car', 'Alert')
+            easygui.msgbox('The driver is not allowed to drive this car', 'Warning')
             break
                 
     if cv2.waitKey(20) & 0xFF == ord('q'):
