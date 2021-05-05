@@ -116,8 +116,9 @@ def autoriseUnknownDriver(img_path):
 face_locations = []
 face_encodings = []
 face_names = []
+known_drivers_loaded = loadKnownDrivers()
 while True:
-    if loadKnownDrivers():
+    if known_drivers_loaded():
         break
         
     ret, frame = video_capture.read()
