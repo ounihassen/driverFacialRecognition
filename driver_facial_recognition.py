@@ -118,7 +118,7 @@ face_encodings = []
 face_names = []
 known_drivers_loaded = loadKnownDrivers()
 while True:
-    if known_drivers_loaded():
+    if known_drivers_loaded:
         break
         
     ret, frame = video_capture.read()
