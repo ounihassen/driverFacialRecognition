@@ -7,6 +7,7 @@ import numpy as np
 from datetime import datetime
 import shutil
 from PIL import Image
+import sys
 
 # Chargement du vidéo
 video_capture = cv2.VideoCapture('videos/vehicule.avi')
@@ -55,7 +56,7 @@ def loadKnownDrivers():
     return is_processing_fail
 
 # fonction qui permet de dessiner un cadre autour du visage
-def drawRectangleOnFace(face_locations, face_names, similarity_text, autorized=True ):
+def drawRectangleOnFace(face_locations, face_names, similarity_text, autorized=True):
     if autorized:
         color = [0,255,0]
         name = face_names
@@ -84,7 +85,10 @@ def captureFace(frame, top, right, bottom, left):
 # fonction accept the new driver to drive the car and save image
 def autoriseUnknownDriver(img_path):
     top = Tk()
-    #top.geometry("300x200")
+    def quitTk(top):
+        top.destroy()
+        sys.exit()
+    
     response = messagebox.askquestion("autorise unknown driver", "Do you want to authorize this person to drive your car ?", icon='warning')
     print(response)
     if response == 'yes':
@@ -111,7 +115,12 @@ def autoriseUnknownDriver(img_path):
         button1 = tk.Button(text='Valider', command=getName, bg='brown', fg='white', font=('helvetica', 9, 'bold'))
         canvas1.create_window(200, 180, window=button1)
         top.mainloop()
-
+    else:
+        print('not autorized')
+        # create button to implement destroy()
+        Button(top, text="Quit", command=quitTk(top)).pack()
+       
+        
 
 face_locations = []
 face_encodings = []
