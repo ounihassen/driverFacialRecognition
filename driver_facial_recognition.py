@@ -8,6 +8,7 @@ from datetime import datetime
 import shutil
 from PIL import Image
 import sys
+import time
 
 # Chargement du vidéo
 video_capture = cv2.VideoCapture('videos/vehicule.avi')
@@ -126,29 +127,41 @@ face_locations = []
 face_encodings = []
 face_names = []
 known_drivers_loaded = loadKnownDrivers()
+
 while True:
     if known_drivers_loaded:
         break
         
     ret, frame = video_capture.read()
     
-    # checher tout les visages dans 'frame'
-    face_locations = face_recognition.face_locations(frame)
-    # encoder 'frame'
+    # Detecter tout les visages dans un 'frame'
+    start_time = time.time()
+    face_locations = face_recognition.face_locations(frame,1,"hog")
+    end_time = time.time()
+    time_elapsed = (end_time - start_time)
+    #print(time_elapsed)
+    
+    # Extraction des caractéristiques ou encoder d'un 'frame'
     face_encodings = face_recognition.face_encodings(frame, face_locations)
        
     face_names = []
-    # Boucle sur chaque visage trouvé dans l'image frame
+    
+    # Boucle sur chaque visage extrait depuis le frame dans "face_encodings"
     for face_encoding in face_encodings: 
         # Voir si le visage correspond au (x) visage (s) connu (s)
-        matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-        # Ou à la place, utilisez les visages connu avec la plus petite distance par rapport au nouveau visage
+        # matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+        # print(matches)
+        # Ou à la place, on utilise les visages connu avec la plus petite 
+        # distance par rapport au nouveau visage
         face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
         best_match_index = np.argmin(face_distances)
-        similarity = (1 - face_distances[0])*100
+        print('best_match_index=>'+str(best_match_index))
+        
+        print('face_distances=>'+str(face_distances))
+        similarity = (1 - face_distances[best_match_index])*100
         similarity_text = str(np.round(similarity))+"%"
 
-        if matches[best_match_index]:
+        if face_distances[best_match_index] <= 0.6:
             name = known_face_names[best_match_index]
             face_names.append(name)    
             autorized = True
